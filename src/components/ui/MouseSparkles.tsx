@@ -18,7 +18,6 @@ interface Sparkle {
  */
 export default function MouseSparkles() {
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -46,8 +45,6 @@ export default function MouseSparkles() {
     const sparkleInterval = 50; // Create a sparkle every 50ms
 
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-
       const now = Date.now();
       if (now - lastSparkleTime > sparkleInterval) {
         lastSparkleTime = now;

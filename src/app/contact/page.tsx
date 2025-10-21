@@ -10,7 +10,7 @@ import { Input, TextArea } from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import { contactAPI } from '@/lib/api';
-import { Mail, MessageSquare, Send, Clock, MapPin, Phone, Users, FileText, Lightbulb } from 'lucide-react';
+import { Mail, Send, Clock, MapPin, Phone, Users, FileText, Lightbulb } from 'lucide-react';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),

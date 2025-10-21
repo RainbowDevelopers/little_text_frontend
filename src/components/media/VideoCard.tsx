@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Play, Clock, Calendar } from 'lucide-react';
+import { Play, Calendar } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import { formatDate } from '@/lib/utils';
 

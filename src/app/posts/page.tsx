@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Container from '@/components/layout/Container';
@@ -17,7 +17,7 @@ const stats = [
   { icon: TrendingUp, label: 'Growing', value: '220%' },
 ];
 
-export default function PostsPage() {
+function PostsContent() {
   const searchParams = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -368,5 +368,22 @@ export default function PostsPage() {
         </Container>
       </section>
     </div>
+  );
+}
+
+export default function PostsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-black dark:border-white"></div>
+            <p className="mt-6 text-gray-600 dark:text-gray-400 text-lg">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <PostsContent />
+    </Suspense>
   );
 }

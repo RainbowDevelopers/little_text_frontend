@@ -80,14 +80,25 @@ export const postsAPI = {
 };
 
 /**
+ * Backend category response type
+ */
+interface BackendCategory {
+  _id: string;
+  category_name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
  * Categories API
  */
 export const categoriesAPI = {
   // Get all categories
   getAll: async (): Promise<Category[]> => {
-    const response = await fetchAPI<{ data: any[] }>('/blog/category');
+    const response = await fetchAPI<{ data: BackendCategory[] }>('/blog/category');
     // Transform backend response to frontend format
-    return response.data.map((cat: any) => ({
+    return response.data.map((cat) => ({
       id: cat._id,
       name: cat.category_name,
       slug: cat.category_name.toLowerCase().replace(/\s+/g, '-'),
