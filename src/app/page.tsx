@@ -2,19 +2,33 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, BookOpen, Video, Headphones, Users, TrendingUp, Zap, Play, Clock, Eye } from 'lucide-react';
+import { ArrowRight, Video, Headphones, Play, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Container from '@/components/layout/Container';
 import Button from '@/components/ui/Button';
-import PostGrid from '@/components/blog/PostGrid';
-import HeroCard from '@/components/blog/HeroCard';
 import CategoryCarousel from '@/components/blog/CategoryCarousel';
 import FeaturedHero from '@/components/blog/FeaturedHero';
-import Card from '@/components/ui/Card';
 import AudioCard from '@/components/media/AudioCard';
 import VideoCard from '@/components/media/VideoCard';
-import { Post, Category, Podcast, Video as VideoType } from '@/lib/types';
-import { postsAPI, categoriesAPI, podcastsAPI, videosAPI } from '@/lib/api';
+import { Post, Podcast, Video as VideoType } from '@/lib/types';
+import { postsAPI, podcastsAPI, videosAPI } from '@/lib/api';
+
+// Helper function to format duration from seconds to MM:SS format
+function formatDuration(seconds?: number): string | undefined {
+  if (!seconds || seconds <= 0) return undefined;
+  
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+// Define the categories in the order they should appear
+const ORDERED_CATEGORIES = [
+  { name: 'Heroes', slug: 'heroes' },
+  { name: 'Startup', slug: 'startup' },
+  { name: 'Growth', slug: 'growth' },
+  { name: 'Explore', slug: 'explore' },
+];
 
 export default function HomePage() {
   const [categoryPosts, setCategoryPosts] = useState<{ [key: string]: Post[] }>({});
@@ -23,14 +37,6 @@ export default function HomePage() {
   const [videos, setVideos] = useState<VideoType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Define the categories in the order they should appear (removed Latest as it's now the hero)
-  const orderedCategories = [
-    { name: 'Heroes', slug: 'heroes' },
-    { name: 'Startup', slug: 'startup' },
-    { name: 'Growth', slug: 'growth' },
-    { name: 'Explore', slug: 'explore' },
-  ];
 
   useEffect(() => {
     async function loadPosts() {
@@ -49,7 +55,7 @@ export default function HomePage() {
         }
 
         // Load posts for each specific category
-        for (const cat of orderedCategories) {
+        for (const cat of ORDERED_CATEGORIES) {
           try {
             if (cat.slug === 'latest') {
               // Skip loading for latest as we're using featured posts now
@@ -59,13 +65,13 @@ export default function HomePage() {
               try {
                 const response = await postsAPI.getByCategory(cat.slug, 1, 6);
                 catPosts[cat.slug] = response.data;
-              } catch (categoryError) {
+              } catch {
                 console.warn(`Category ${cat.name} not found or has no posts yet`);
                 catPosts[cat.slug] = [];
               }
             }
-          } catch (err) {
-            console.error(`Error loading ${cat.name} posts:`, err);
+          } catch (error) {
+            console.error(`Error loading ${cat.name} posts:`, error);
             catPosts[cat.slug] = [];
           }
         }
@@ -196,7 +202,7 @@ export default function HomePage() {
       )}
 
       {/* Category Sections with Carousel */}
-      {!loading && !error && orderedCategories.map((category, categoryIndex) => {
+      {!loading && !error && ORDERED_CATEGORIES.map((category, categoryIndex) => {
         const posts = categoryPosts[category.slug] || [];
         if (posts.length === 0) return null;
 

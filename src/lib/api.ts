@@ -1,6 +1,19 @@
 // API Client for LittleText backend
 
-import { Post, Category, Podcast, Video, ContactFormData, ApiResponse, PaginatedResponse } from './types';
+import { 
+  Post, 
+  Category, 
+  Podcast, 
+  Video, 
+  ContactFormData, 
+  ApiResponse, 
+  PaginatedResponse,
+  BackendBlogPost,
+  BackendCategory,
+  BackendPodcast,
+  BackendVideo,
+  BackendPaginationResponse
+} from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api';
 
@@ -40,7 +53,7 @@ export async function fetchAPI<T>(
 /**
  * Transform backend blog post to frontend Post type
  */
-function transformBlogPost(backendPost: any): Post {
+function transformBlogPost(backendPost: BackendBlogPost): Post {
   // Generate a proper slug from title, removing special characters
   const generateSlug = (title: string) => {
     return title
@@ -61,7 +74,7 @@ function transformBlogPost(backendPost: any): Post {
     bannerImage: backendPost.banner_image,
     additionalImages: backendPost.additional_images || [],
     author: {
-      id: backendPost.author?._id || backendPost.author,
+      id: backendPost.author?._id || backendPost.author || 'admin',
       name: backendPost.author?.firstname 
         ? `${backendPost.author.firstname} ${backendPost.author.lastname || ''}`.trim()
         : 'Admin',
@@ -91,8 +104,8 @@ export const postsAPI = {
     const categoryParam = categorySlug ? `&category=${categorySlug}` : '';
     const response = await fetchAPI<{ 
       data: { 
-        data: any[]; 
-        pagination: { page: number; limit: number; totalPages: number; totalCount: number } 
+        data: BackendBlogPost[]; 
+        pagination: BackendPaginationResponse 
       } 
     }>(
       `/blog?page=${page}&limit=${limit}${categoryParam}`
@@ -113,8 +126,8 @@ export const postsAPI = {
   getByCategory: async (categorySlug: string, page = 1, limit = 10): Promise<PaginatedResponse<Post>> => {
     const response = await fetchAPI<{ 
       data: { 
-        data: any[]; 
-        pagination: { page: number; limit: number; totalPages: number; totalCount: number } 
+        data: BackendBlogPost[]; 
+        pagination: BackendPaginationResponse 
       } 
     }>(
       `/blog?category=${categorySlug}&page=${page}&limit=${limit}`
@@ -131,17 +144,12 @@ export const postsAPI = {
     };
   },
 
-  // Get featured posts
-  getFeatured: async (limit = 6): Promise<Post[]> => {
-    return fetchAPI<Post[]>(`/posts/featured?limit=${limit}`);
-  },
-
   // Get single post by slug
   getBySlug: async (slug: string): Promise<Post> => {
     // First, get all posts to find the one matching the slug
     const response = await fetchAPI<{ 
       data: { 
-        data: any[]; 
+        data: BackendBlogPost[]; 
       } 
     }>(`/blog?limit=100`); // Get a large batch to search through
     
@@ -153,7 +161,7 @@ export const postsAPI = {
     }
     
     // Now fetch the full post by ID
-    const fullPostResponse = await fetchAPI<{ data: any }>(`/blog/${post.id}`);
+    const fullPostResponse = await fetchAPI<{ data: BackendBlogPost }>(`/blog/${post.id}`);
     return transformBlogPost(fullPostResponse.data);
   },
 
@@ -162,14 +170,14 @@ export const postsAPI = {
     try {
       // Since /posts/:id/related doesn't exist, fetch posts from same category
       // First get the post to find its category
-      const postResponse = await fetchAPI<{ data: any }>(`/blog/${postId}`);
+      const postResponse = await fetchAPI<{ data: BackendBlogPost }>(`/blog/${postId}`);
       const post = transformBlogPost(postResponse.data);
       
       if (!post.category) {
         // If no category, return recent posts
         const response = await fetchAPI<{ 
           data: { 
-            data: any[]; 
+            data: BackendBlogPost[]; 
           } 
         }>(`/blog?limit=${limit + 1}`);
         
@@ -182,7 +190,7 @@ export const postsAPI = {
       // Get posts from same category
       const response = await fetchAPI<{ 
         data: { 
-          data: any[]; 
+          data: BackendBlogPost[]; 
         } 
       }>(`/blog?limit=${limit + 1}`);
       
@@ -203,21 +211,10 @@ export const postsAPI = {
 
   // Get featured posts (for Latest section)
   getFeatured: async (): Promise<Post[]> => {
-    const response = await fetchAPI<{ data: any[] }>('/blog/featured/list');
+    const response = await fetchAPI<{ data: BackendBlogPost[] }>('/blog/featured/list');
     return response.data.map(transformBlogPost);
   },
 };
-
-/**
- * Backend category response type
- */
-interface BackendCategory {
-  _id: string;
-  category_name: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 /**
  * Categories API
@@ -257,7 +254,7 @@ export const contactAPI = {
 /**
  * Transform backend podcast to frontend Podcast type
  */
-function transformPodcast(backendPodcast: any): Podcast {
+function transformPodcast(backendPodcast: BackendPodcast): Podcast {
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
@@ -303,8 +300,8 @@ export const podcastsAPI = {
   getAll: async (page = 1, limit = 10): Promise<PaginatedResponse<Podcast>> => {
     const response = await fetchAPI<{ 
       data: { 
-        data: any[]; 
-        pagination: { page: number; limit: number; totalPages: number; totalCount: number } 
+        data: BackendPodcast[]; 
+        pagination: BackendPaginationResponse 
       } 
     }>(
       `/podcast?page=${page}&limit=${limit}`
@@ -325,7 +322,7 @@ export const podcastsAPI = {
   getBySlug: async (slug: string): Promise<Podcast> => {
     const response = await fetchAPI<{ 
       data: { 
-        data: any[]; 
+        data: BackendPodcast[]; 
       } 
     }>(`/podcast?limit=100`);
     
@@ -341,7 +338,7 @@ export const podcastsAPI = {
 
   // Get podcast by ID
   getById: async (id: string): Promise<Podcast> => {
-    const response = await fetchAPI<{ data: any }>(`/podcast/${id}`);
+    const response = await fetchAPI<{ data: BackendPodcast }>(`/podcast/${id}`);
     return transformPodcast(response.data);
   },
 };
@@ -349,7 +346,7 @@ export const podcastsAPI = {
 /**
  * Transform backend video to frontend Video type
  */
-function transformVideo(backendVideo: any): Video {
+function transformVideo(backendVideo: BackendVideo): Video {
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
@@ -395,8 +392,8 @@ export const videosAPI = {
   getAll: async (page = 1, limit = 10): Promise<PaginatedResponse<Video>> => {
     const response = await fetchAPI<{ 
       data: { 
-        data: any[]; 
-        pagination: { page: number; limit: number; totalPages: number; totalCount: number } 
+        data: BackendVideo[]; 
+        pagination: BackendPaginationResponse 
       } 
     }>(
       `/video?page=${page}&limit=${limit}`
@@ -417,7 +414,7 @@ export const videosAPI = {
   getBySlug: async (slug: string): Promise<Video> => {
     const response = await fetchAPI<{ 
       data: { 
-        data: any[]; 
+        data: BackendVideo[]; 
       } 
     }>(`/video?limit=100`);
     
@@ -433,7 +430,7 @@ export const videosAPI = {
 
   // Get video by ID
   getById: async (id: string): Promise<Video> => {
-    const response = await fetchAPI<{ data: any }>(`/video/${id}`);
+    const response = await fetchAPI<{ data: BackendVideo }>(`/video/${id}`);
     return transformVideo(response.data);
   },
 };

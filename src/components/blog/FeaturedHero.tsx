@@ -59,7 +59,7 @@ export default function FeaturedHero({ posts }: FeaturedHeroProps) {
             >
               {/* Background Image */}
               <Image
-                src={activePost.featuredImage || activePost.bannerImage}
+                src={activePost.featuredImage || activePost.bannerImage || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxMjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEyMDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik01ODUgMjgwSDYxNVYzMjBINTg1VjI4MFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHN2Zz4K'}
                 alt={activePost.title}
                 fill
                 className="object-cover"

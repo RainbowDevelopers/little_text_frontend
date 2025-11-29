@@ -39,6 +39,73 @@ export interface Tag {
   slug: string;
 }
 
+// Backend data structures
+export interface BackendBlogPost {
+  _id: string;
+  title: string;
+  description: string;
+  content: string;
+  banner_image?: string;
+  additional_images?: string[];
+  category_id?: any;
+  author?: any;
+  status: 'PUBLISHED' | 'DRAFT';
+  is_deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  featured?: boolean;
+}
+
+export interface BackendCategory {
+  _id: string;
+  category_name: string;
+  category_slug?: string;
+  category_description?: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BackendPodcast {
+  _id: string;
+  title: string;
+  description: string;
+  audio_file: string;
+  banner_image?: string;
+  category_id?: any;
+  author?: any;
+  duration?: number;
+  status: 'PUBLISHED' | 'DRAFT';
+  is_deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  featured?: boolean;
+}
+
+export interface BackendVideo {
+  _id: string;
+  title: string;
+  description: string;
+  youtube_url: string;
+  video_thumbnail?: string;
+  banner_image?: string;
+  category_id?: any;
+  author?: any;
+  duration?: number;
+  status: 'PUBLISHED' | 'DRAFT';
+  is_deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  featured?: boolean;
+}
+
+export interface BackendPaginationResponse {
+  page: number;
+  limit: number;
+  totalPages: number;
+  totalCount: number;
+}
+
 export interface ContactFormData {
   name: string;
   email: string;

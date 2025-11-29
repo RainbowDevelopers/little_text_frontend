@@ -9,7 +9,7 @@ interface VideoCardProps {
   id: string;
   title: string;
   description: string;
-  thumbnailUrl: string;
+  thumbnailUrl?: string;
   videoUrl: string;
   duration?: string;
   publishedAt: string;
@@ -25,17 +25,36 @@ export default function VideoCard({
   title,
   description,
   thumbnailUrl,
+  videoUrl,
   duration,
   publishedAt,
   category,
 }: VideoCardProps) {
+  // Generate a placeholder using the video title or use a YouTube thumbnail if available
+  const getVideoThumbnail = () => {
+    if (thumbnailUrl) return thumbnailUrl;
+    
+    // If videoUrl contains a YouTube video ID, try to get the thumbnail
+    if (videoUrl) {
+      // Extract YouTube video ID from various YouTube URL formats
+      const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/;
+      const match = videoUrl.match(youtubeRegex);
+      if (match && match[1]) {
+        return `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg`;
+      }
+    }
+    
+    // Fallback to a gray placeholder
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQwIiBoZWlnaHQ9IjM2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZDFkNWRiIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzZiNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNvbWluZyBTb29uPC90ZXh0Pjwvc3ZnPg==';
+  };
+  
   return (
     <Link href={`/videos/${id}`} className="block group">
       <Card hover padding="none" className="overflow-hidden h-full">
         {/* Thumbnail with Play Overlay */}
         <div className="relative aspect-video bg-gray-200 dark:bg-gray-800 overflow-hidden">
           <Image
-            src={thumbnailUrl}
+            src={getVideoThumbnail()}
             alt={title}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"

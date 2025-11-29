@@ -9,6 +9,15 @@ import { Video, Play, Eye, Film } from 'lucide-react';
 import { videosAPI } from '@/lib/api';
 import { Video as VideoType } from '@/lib/types';
 
+// Helper function to format duration from seconds to MM:SS format
+function formatDuration(seconds?: number): string | undefined {
+  if (!seconds || seconds <= 0) return undefined;
+  
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
 export default function VideosPage() {
   const [videos, setVideos] = useState<VideoType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -203,7 +212,7 @@ export default function VideosPage() {
                   description={video.description}
                   thumbnailUrl={video.thumbnailUrl}
                   videoUrl={video.videoUrl}
-                  duration={video.duration}
+                  duration={formatDuration(video.duration)}
                   publishedAt={video.publishedAt}
                   category={video.category?.name}
                 />

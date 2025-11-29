@@ -4,7 +4,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Container from '@/components/layout/Container';
 import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
 import { BookOpen, Users, Target, Heart, Zap, Shield } from 'lucide-react';
 
 const values = [

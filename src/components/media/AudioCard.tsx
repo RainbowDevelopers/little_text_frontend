@@ -26,7 +26,6 @@ let globalSetIsPlaying: ((playing: boolean) => void) | null = null;
  * Features: Play/Pause, Progress bar, Volume control, Single playback
  */
 export default function AudioCard({
-  id,
   slug,
   title,
   description,
@@ -41,6 +40,32 @@ export default function AudioCard({
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Convert relative audio URL to streaming URL
+  // Convert /uploads/podcasts/file.mp3 to http://localhost:8000/api/v1/restapi/stream/podcasts/file.mp3
+  const getAudioUrl = () => {
+    if (!audioUrl) return '';
+    
+    // If already a full URL, return as is
+    if (audioUrl.startsWith('http')) {
+      return audioUrl;
+    }
+    
+    // Extract type and filename from /uploads/podcasts/file.mp3
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1/restapi';
+    const urlWithoutUploads = audioUrl.replace(/^\/uploads\//, '');
+    const parts = urlWithoutUploads.split('/');
+    
+    if (parts.length >= 2) {
+      const type = parts[0]; // 'podcasts'
+      const filename = parts.slice(1).join('/'); // 'file.mp3'
+      return `${apiBase}/stream/${type}/${filename}`;
+    }
+    
+    return audioUrl;
+  };
+
+  const fullAudioUrl = getAudioUrl();
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -80,7 +105,7 @@ export default function AudioCard({
       audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('canplay', handleCanPlay);
     };
-  }, []);
+  }, [audioUrl, title, fullAudioUrl]);
 
   const togglePlay = async () => {
     const audio = audioRef.current;
@@ -145,32 +170,6 @@ export default function AudioCard({
   };
 
   const progress = audioDuration > 0 ? (currentTime / audioDuration) * 100 : 0;
-
-  // Convert relative audio URL to streaming URL
-  // Convert /uploads/podcasts/file.mp3 to http://localhost:8000/api/v1/restapi/stream/podcasts/file.mp3
-  const getAudioUrl = () => {
-    if (!audioUrl) return '';
-    
-    // If already a full URL, return as is
-    if (audioUrl.startsWith('http')) {
-      return audioUrl;
-    }
-    
-    // Extract type and filename from /uploads/podcasts/file.mp3
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1/restapi';
-    const urlWithoutUploads = audioUrl.replace(/^\/uploads\//, '');
-    const parts = urlWithoutUploads.split('/');
-    
-    if (parts.length >= 2) {
-      const type = parts[0]; // 'podcasts'
-      const filename = parts.slice(1).join('/'); // 'file.mp3'
-      return `${apiBase}/stream/${type}/${filename}`;
-    }
-    
-    return audioUrl;
-  };
-
-  const fullAudioUrl = getAudioUrl();
 
   // Debug logging
   useEffect(() => {
