@@ -50,8 +50,8 @@ export default function SinglePostPage() {
       <div className="py-24">
         <Container>
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
-            <p className="mt-4 text-gray-600">Loading article...</p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading article...</p>
           </div>
         </Container>
       </div>
@@ -63,8 +63,8 @@ export default function SinglePostPage() {
       <div className="py-24">
         <Container>
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-black mb-4">Post Not Found</h1>
-            <p className="text-gray-600 mb-8">
+            <h1 className="text-4xl font-bold text-black dark:text-white mb-4">Post Not Found</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
               The article you're looking for doesn't exist or has been removed.
             </p>
             <Button href="/posts" icon={<ArrowLeft className="w-5 h-5" />}>
@@ -79,11 +79,11 @@ export default function SinglePostPage() {
   return (
     <article>
       {/* Back Link */}
-      <div className="py-8 border-b border-gray-200">
-        <Container>
+      <div className="pt-12 pb-8">
+        <Container size="wide">
           <Link
             href="/posts"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-black dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Articles
@@ -93,27 +93,27 @@ export default function SinglePostPage() {
 
       {/* Post Hero */}
       <div className="py-12 md:py-16">
-        <Container size="narrow">
+        <Container size="default">
           <PostHero post={post} />
         </Container>
       </div>
 
       {/* Post Content */}
       <div className="py-8 md:py-12">
-        <Container size="narrow">
+        <Container size="default">
           <RichContent content={post.content} />
         </Container>
       </div>
 
       {/* Tags */}
       {post.tags && post.tags.length > 0 && (
-        <div className="py-8 border-t border-gray-200">
-          <Container size="narrow">
+        <div className="py-8 border-t border-gray-200 dark:border-gray-700">
+          <Container size="default">
             <div className="flex flex-wrap gap-2">
               {post.tags.map((tag) => (
                 <span
                   key={tag.id}
-                  className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
+                  className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-full"
                 >
                   {tag.name}
                 </span>
@@ -125,14 +125,14 @@ export default function SinglePostPage() {
 
       {/* Related Posts */}
       {relatedPosts.length > 0 && (
-        <section className="py-16 md:py-24 bg-gray-50">
+        <section className="py-16 md:py-24 bg-gray-50 dark:bg-gray-900">
           <Container>
             <div className="space-y-12">
               <div className="text-center">
-                <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
+                <h2 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-4">
                   Related Articles
                 </h2>
-                <p className="text-lg text-gray-600">
+                <p className="text-lg text-gray-600 dark:text-gray-400">
                   Continue exploring similar stories
                 </p>
               </div>

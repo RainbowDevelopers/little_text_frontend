@@ -2,78 +2,95 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, BookOpen, Video, Headphones, Users, TrendingUp, Award, Zap } from 'lucide-react';
+import { ArrowRight, BookOpen, Video, Headphones, Users, TrendingUp, Zap, Play, Clock, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Container from '@/components/layout/Container';
 import Button from '@/components/ui/Button';
 import PostGrid from '@/components/blog/PostGrid';
 import HeroCard from '@/components/blog/HeroCard';
+import CategoryCarousel from '@/components/blog/CategoryCarousel';
+import FeaturedHero from '@/components/blog/FeaturedHero';
 import Card from '@/components/ui/Card';
-import { Post, Category } from '@/lib/types';
-import { postsAPI, categoriesAPI } from '@/lib/api';
-
-const stats = [
-  { icon: BookOpen, label: 'Articles', value: '250+' },
-  { icon: Users, label: 'Readers', value: '50K+' },
-  { icon: Award, label: 'Awards', value: '12' },
-  { icon: TrendingUp, label: 'Growth', value: '200%' },
-];
-
-const contentTypes = [
-  {
-    icon: BookOpen,
-    title: 'Articles',
-    description: 'In-depth articles covering technology, design, culture, and more.',
-    link: '/posts',
-    color: 'from-gray-900 to-black',
-  },
-  {
-    icon: Video,
-    title: 'Videos',
-    description: 'Comprehensive video tutorials and visual guides for learning.',
-    link: '/videos',
-    color: 'from-gray-800 to-gray-900',
-  },
-  {
-    icon: Headphones,
-    title: 'Podcasts',
-    description: 'Deep conversations with experts and thought leaders.',
-    link: '/podcasts',
-    color: 'from-gray-700 to-gray-800',
-  },
-];
+import AudioCard from '@/components/media/AudioCard';
+import VideoCard from '@/components/media/VideoCard';
+import { Post, Category, Podcast, Video as VideoType } from '@/lib/types';
+import { postsAPI, categoriesAPI, podcastsAPI, videosAPI } from '@/lib/api';
 
 export default function HomePage() {
-  const [latestPosts, setLatestPosts] = useState<Post[]>([]);
-  const [heroPosts, setHeroPosts] = useState<Post[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [categoryPosts, setCategoryPosts] = useState<{ [key: string]: Post[] }>({});
+  const [featuredPosts, setFeaturedPosts] = useState<Post[]>([]);
+  const [podcasts, setPodcasts] = useState<Podcast[]>([]);
+  const [videos, setVideos] = useState<VideoType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Define the categories in the order they should appear (removed Latest as it's now the hero)
+  const orderedCategories = [
+    { name: 'Heroes', slug: 'heroes' },
+    { name: 'Startup', slug: 'startup' },
+    { name: 'Growth', slug: 'growth' },
+    { name: 'Explore', slug: 'explore' },
+  ];
 
   useEffect(() => {
     async function loadPosts() {
       try {
         setLoading(true);
-        // Load latest posts
-        const latest = await postsAPI.getAll(1, 6);
-        setLatestPosts(latest.data);
-
-        // Load hero posts (featured)
-        const heroes = await postsAPI.getFeatured(2);
-        setHeroPosts(heroes);
-
-        // Load categories
-        const cats = await categoriesAPI.getAll();
-        setCategories(cats.slice(0, 3)); // Show top 3 categories
-
-        // Load posts for each category (top 3 posts per category)
         const catPosts: { [key: string]: Post[] } = {};
-        for (const cat of cats.slice(0, 3)) {
-          const response = await postsAPI.getByCategory(cat.slug, 1, 3);
-          catPosts[cat.slug] = response.data;
+
+        // Load featured posts first
+        try {
+          const featured = await postsAPI.getFeatured();
+          console.log('Featured posts loaded:', featured.length, featured);
+          setFeaturedPosts(featured);
+        } catch (err) {
+          console.error('Error loading featured posts:', err);
+          setFeaturedPosts([]);
         }
+
+        // Load posts for each specific category
+        for (const cat of orderedCategories) {
+          try {
+            if (cat.slug === 'latest') {
+              // Skip loading for latest as we're using featured posts now
+              continue;
+            } else {
+              // For other categories, get posts by category slug
+              try {
+                const response = await postsAPI.getByCategory(cat.slug, 1, 6);
+                catPosts[cat.slug] = response.data;
+              } catch (categoryError) {
+                console.warn(`Category ${cat.name} not found or has no posts yet`);
+                catPosts[cat.slug] = [];
+              }
+            }
+          } catch (err) {
+            console.error(`Error loading ${cat.name} posts:`, err);
+            catPosts[cat.slug] = [];
+          }
+        }
+        
         setCategoryPosts(catPosts);
+
+        // Load podcasts (latest 4 - 1 featured + 3 grid)
+        try {
+          const podcastsResponse = await podcastsAPI.getAll(1, 4);
+          console.log('Podcasts loaded:', podcastsResponse.data.length);
+          setPodcasts(podcastsResponse.data);
+        } catch (err) {
+          console.error('Error loading podcasts:', err);
+          setPodcasts([]);
+        }
+
+        // Load videos (latest 4 - 1 featured + 3 grid)
+        try {
+          const videosResponse = await videosAPI.getAll(1, 4);
+          console.log('Videos loaded:', videosResponse.data.length);
+          setVideos(videosResponse.data);
+        } catch (err) {
+          console.error('Error loading videos:', err);
+          setVideos([]);
+        }
       } catch (err) {
         console.error('Error loading posts:', err);
         setError('Failed to load posts');
@@ -87,246 +104,113 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-b from-white via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-black py-20 md:py-32 lg:py-40">
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-5xl mx-auto text-center"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="inline-block mb-6"
-            >
-              <span className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-sm font-semibold uppercase tracking-wider rounded-full">
-                Welcome to LittleText
-              </span>
-            </motion.div>
+      {/* Featured Posts Hero Section */}
+      {!loading && featuredPosts.length > 0 && (
+        <FeaturedHero posts={featuredPosts} />
+      )}
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="text-3xl md:text-5xl lg:text-6xl font-bold text-black dark:text-white leading-tight mb-6"
-            >
-              Stories Worth Reading
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-400 leading-relaxed mb-8"
-            >
-              Thoughtful content delivered with clarity and purpose. Discover
-              stories that inspire, inform, and matter.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4"
-            >
-              <Button href="/posts" size="lg" icon={<ArrowRight className="w-5 h-5" />}>
-                Explore Articles
-              </Button>
-              <Button href="/about" variant="secondary" size="lg">
-                Learn More
-              </Button>
-            </motion.div>
-          </motion.div>
-        </Container>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 md:py-24 bg-black dark:bg-gray-950">
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12"
-          >
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="text-center"
-                >
-                  <Icon className="w-10 h-10 md:w-12 md:h-12 text-white mx-auto mb-4" />
-                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm md:text-base text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                    {stat.label}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </Container>
-      </section>
-
-      {/* Content Types Section */}
-      <section className="py-16 md:py-24 bg-white dark:bg-black">
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12 md:mb-16"
-          >
-            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-4">
-              Explore Our Content
-            </h2>
-            <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Multiple formats to consume the content that matters most to you
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {contentTypes.map((type, index) => {
-              const Icon = type.icon;
-              return (
-                <motion.div
-                  key={type.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                >
-                  <Link href={type.link} className="block group">
-                    <Card padding="lg" className="h-full hover:shadow-2xl transition-all">
-                      <div className={`w-16 h-16 bg-gradient-to-br ${type.color} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                        <Icon className="w-8 h-8 text-white" />
-                      </div>
-                      <h3 className="text-xl md:text-2xl font-bold text-black dark:text-white mb-3 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
-                        {type.title}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-                        {type.description}
-                      </p>
-                      <div className="flex items-center gap-2 text-black dark:text-white font-medium group-hover:gap-3 transition-all">
-                        Explore <ArrowRight className="w-5 h-5" />
-                      </div>
-                    </Card>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-        </Container>
-      </section>
-
-      {/* Latest Posts Section */}
-      <section className="py-16 md:py-24 bg-gray-50 dark:bg-gray-900">
-        <Container>
-          <div className="space-y-12">
-            {/* Section Header */}
+      {/* Fallback Hero if no featured posts */}
+      {!loading && featuredPosts.length === 0 && (
+        <section className="relative bg-gradient-to-b from-white via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-black py-12 md:py-16 lg:py-20">
+          <Container>
             <motion.div
               initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="flex items-center justify-between"
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="max-w-5xl mx-auto text-center"
             >
-              <div>
-                <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-4">
-                  Latest Articles
-                </h2>
-                <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-400">
-                  Fresh perspectives and insights from our latest posts
-                </p>
-              </div>
-              <Link
-                href="/posts"
-                className="hidden md:flex items-center gap-2 text-black dark:text-white font-medium hover:opacity-70 transition-opacity text-lg"
-              >
-                View All <ArrowRight className="w-5 h-5" />
-              </Link>
-            </motion.div>
-
-            {/* Posts Grid */}
-            {loading && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-black dark:border-white"></div>
-                <p className="mt-6 text-gray-600 dark:text-gray-400 text-lg">Loading posts...</p>
-              </motion.div>
-            )}
-
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-16"
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="inline-block mb-6"
               >
-                <p className="text-red-600 dark:text-red-400 mb-6 text-lg font-medium">{error}</p>
-                <Button onClick={() => window.location.reload()} size="lg">
-                  Try Again
-                </Button>
+                <span className="px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-sm font-semibold uppercase tracking-wider rounded-full">
+                  Welcome to LittleText
+                </span>
               </motion.div>
-            )}
 
-            {!loading && !error && latestPosts.length > 0 && (
-              <PostGrid posts={latestPosts} columns={3} />
-            )}
-
-            {!loading && !error && latestPosts.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="text-3xl md:text-5xl lg:text-6xl font-bold text-black dark:text-white leading-tight mb-6"
               >
-                <p className="text-gray-600 dark:text-gray-400 mb-6 text-lg">No posts available yet.</p>
-                <Button href="/contact" size="lg">
-                  Get in Touch
-                </Button>
-              </motion.div>
-            )}
+                Discover Stories That Matter
+              </motion.h1>
 
-            {/* Mobile View All Link */}
-            {!loading && !error && latestPosts.length > 0 && (
-              <div className="md:hidden text-center">
-                <Link
-                  href="/posts"
-                  className="inline-flex items-center gap-2 text-black dark:text-white font-medium hover:opacity-70 transition-opacity text-lg"
-                >
-                  View All Articles <ArrowRight className="w-5 h-5" />
-                </Link>
-              </div>
-            )}
-          </div>
-        </Container>
-      </section>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-400 leading-relaxed mb-8"
+              >
+                Thoughtful content delivered with clarity and purpose
+              </motion.p>
 
-      {/* Category Sections */}
-      {!loading && !error && categories.length > 0 && categories.map((category, categoryIndex) => {
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+                className="text-sm text-gray-500 dark:text-gray-500 italic"
+              >
+                Note: No featured posts yet. Admin can feature posts to create a hero carousel.
+              </motion.p>
+            </motion.div>
+          </Container>
+        </section>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <section className="py-16 md:py-24 bg-white dark:bg-black">
+          <Container>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-16"
+            >
+              <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-black dark:border-white"></div>
+              <p className="mt-6 text-gray-600 dark:text-gray-400 text-lg">Loading articles...</p>
+            </motion.div>
+          </Container>
+        </section>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <section className="py-16 md:py-24 bg-white dark:bg-black">
+          <Container>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-16"
+            >
+              <p className="text-red-600 dark:text-red-400 mb-6 text-lg font-medium">{error}</p>
+              <Button onClick={() => window.location.reload()} size="lg">
+                Try Again
+              </Button>
+            </motion.div>
+          </Container>
+        </section>
+      )}
+
+      {/* Category Sections with Carousel */}
+      {!loading && !error && orderedCategories.map((category, categoryIndex) => {
         const posts = categoryPosts[category.slug] || [];
         if (posts.length === 0) return null;
 
+        const bgClass = categoryIndex % 2 === 0 
+          ? 'bg-white dark:bg-black' 
+          : 'bg-gray-50 dark:bg-gray-900';
+
         return (
           <section
-            key={category.id}
-            className={`py-16 md:py-24 ${categoryIndex % 2 === 0 ? 'bg-white dark:bg-black' : 'bg-gray-50 dark:bg-gray-900'}`}
+            key={category.slug}
+            className={`py-16 md:py-24 ${bgClass}`}
           >
             <Container>
-              <div className="space-y-12">
+              <div className="space-y-8">
                 {/* Section Header */}
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
@@ -336,28 +220,36 @@ export default function HomePage() {
                   className="flex items-center justify-between"
                 >
                   <div>
-                    <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-4">
+                    <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-2">
                       {category.name}
                     </h2>
-                    <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-400">
-                      {category.description || `Explore ${category.name.toLowerCase()} articles`}
+                    <p className="text-base md:text-lg text-gray-600 dark:text-gray-400">
+                      {category.slug === 'latest' 
+                        ? 'Fresh perspectives and insights from our newest posts'
+                        : category.slug === 'heroes'
+                        ? 'Stories of inspiring individuals making a difference'
+                        : category.slug === 'startup'
+                        ? 'Innovation and entrepreneurship insights'
+                        : category.slug === 'growth'
+                        ? 'Strategies for personal and professional development'
+                        : 'Discover new topics and expand your horizons'}
                     </p>
                   </div>
                   <Link
-                    href={`/posts?category=${category.slug}`}
+                    href={category.slug === 'latest' ? '/posts' : `/posts?category=${category.slug}`}
                     className="hidden md:flex items-center gap-2 text-black dark:text-white font-medium hover:opacity-70 transition-opacity text-lg"
                   >
                     View All <ArrowRight className="w-5 h-5" />
                   </Link>
                 </motion.div>
 
-                {/* Posts Grid */}
-                <PostGrid posts={posts} columns={3} />
+                {/* Carousel */}
+                <CategoryCarousel posts={posts} categorySlug={category.slug} />
 
                 {/* Mobile View All Link */}
                 <div className="md:hidden text-center">
                   <Link
-                    href={`/posts?category=${category.slug}`}
+                    href={category.slug === 'latest' ? '/posts' : `/posts?category=${category.slug}`}
                     className="inline-flex items-center gap-2 text-black dark:text-white font-medium hover:opacity-70 transition-opacity text-lg"
                   >
                     View All {category.name} <ArrowRight className="w-5 h-5" />
@@ -369,172 +261,307 @@ export default function HomePage() {
         );
       })}
 
-      {/* Heroes Section */}
-      {!loading && !error && heroPosts.length > 0 && (
+      {/* Podcasts Section */}
+      {!loading && podcasts.length > 0 && (
         <section className="py-16 md:py-24 bg-white dark:bg-black">
           <Container>
-            <div className="space-y-12">
-              {/* Section Header */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="mb-12"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <Headphones className="w-10 h-10 text-black dark:text-white" />
+                    <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white">
+                      Latest Podcasts
+                    </h2>
+                  </div>
+                  <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-400">
+                    Deep conversations with experts and thought leaders
+                  </p>
+                </div>
+                <Link
+                  href="/podcasts"
+                  className="hidden md:flex items-center gap-2 text-black dark:text-white font-medium hover:opacity-70 transition-opacity text-lg"
+                >
+                  Explore More <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+
+              {/* Featured Podcast */}
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="text-center"
+                transition={{ duration: 0.5 }}
+                className="mb-12"
               >
-                <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-4">
-                  Featured Stories
-                </h2>
-                <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-400">
-                  Our most impactful and inspiring content
-                </p>
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative overflow-hidden rounded-2xl cursor-pointer group"
+                  onClick={() => window.location.href = `/podcasts/${podcasts[0].slug}`}
+                >
+                  {/* Background Image */}
+                  <div className="relative aspect-[21/9] md:aspect-[21/8] lg:aspect-[21/7]">
+                    {podcasts[0].bannerImage && (
+                      <>
+                        <img
+                          src={podcasts[0].bannerImage}
+                          alt={podcasts[0].title}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/40 dark:from-black/95 dark:via-black/80 dark:to-black/50" />
+                      </>
+                    )}
+                    
+                    {!podcasts[0].bannerImage && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-purple-700 to-pink-700 dark:from-purple-950 dark:via-purple-800 dark:to-pink-800" />
+                    )}
+                    
+                    {/* Play Button Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="w-20 h-20 md:w-24 md:h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-4 border-white/50 group-hover:scale-110 transition-transform duration-300">
+                        <Headphones className="w-10 h-10 md:w-12 md:h-12 text-white ml-1" />
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Headphones className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                        <span className="px-3 py-1 bg-white/90 dark:bg-white text-black text-xs md:text-sm font-bold uppercase tracking-wider rounded-full">
+                          Featured
+                        </span>
+                        {podcasts[0].category && (
+                          <span className="px-3 py-1 bg-black/50 backdrop-blur-sm text-white text-xs md:text-sm font-semibold uppercase tracking-wider rounded-full border border-white/30">
+                            {podcasts[0].category.name}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4 max-w-4xl group-hover:text-gray-100 transition-colors">
+                        {podcasts[0].title}
+                      </h3>
+                      
+                      <p className="text-base md:text-lg text-gray-200 dark:text-gray-300 mb-6 max-w-3xl line-clamp-2">
+                        {podcasts[0].description}
+                      </p>
+                      
+                      <div className="flex flex-wrap items-center gap-4 md:gap-6">
+                        {podcasts[0].duration && (
+                          <div className="flex items-center gap-2 text-white">
+                            <Headphones className="w-4 h-4 md:w-5 md:h-5" />
+                            <span className="text-sm md:text-base font-medium">
+                              {Math.floor(podcasts[0].duration / 60)}:{(podcasts[0].duration % 60).toString().padStart(2, '0')}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-white text-sm md:text-base font-medium group-hover:bg-white/20 transition-colors">
+                          <Headphones className="w-4 h-4 md:w-5 md:h-5" />
+                          <span>Listen Now</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               </motion.div>
 
-              {/* Hero Cards */}
-              <div className="space-y-8">
-                {heroPosts.map((post, index) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                {podcasts.slice(1, 4).map((podcast, index) => (
                   <motion.div
-                    key={post.id}
-                    initial={{ opacity: 0, y: 50 }}
+                    key={podcast.id}
+                    initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: index * 0.2 }}
+                    viewport={{ once: true, margin: '-50px' }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <HeroCard post={post} />
+                    <AudioCard
+                      id={podcast.id}
+                      slug={podcast.slug}
+                      title={podcast.title}
+                      description={podcast.description}
+                      audioUrl={podcast.audioUrl}
+                      duration={podcast.duration ? `${Math.floor(podcast.duration / 60)}:${(podcast.duration % 60).toString().padStart(2, '0')}` : undefined}
+                      publishedAt={podcast.publishedAt}
+                      category={podcast.category?.name}
+                    />
                   </motion.div>
                 ))}
               </div>
-            </div>
+
+              {/* Mobile Explore More Link */}
+              <div className="md:hidden text-center mt-8">
+                <Link
+                  href="/podcasts"
+                  className="inline-flex items-center gap-2 text-black dark:text-white font-medium hover:opacity-70 transition-opacity text-lg"
+                >
+                  Explore More Podcasts <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+            </motion.div>
           </Container>
         </section>
       )}
 
-      {/* Why Choose Us Section */}
-      <section className="py-16 md:py-24 bg-gray-50 dark:bg-gray-900">
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12 md:mb-16"
-          >
-            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-4">
-              Why LittleText?
-            </h2>
-            <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              We are committed to delivering quality content that makes a difference
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
-            {/* Text Content */}
+      {/* Videos Section */}
+      {!loading && (
+        <section className="py-16 md:py-24 bg-gray-50 dark:bg-gray-900">
+          <Container>
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
-              className="space-y-6"
+              transition={{ duration: 0.6 }}
+              className="mb-12"
             >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-black dark:bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-6 h-6 text-white dark:text-black" />
-                </div>
+              <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h3 className="text-xl md:text-2xl font-semibold text-black dark:text-white mb-2">
-                    Quality First
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Every piece is thoughtfully written, carefully edited, and designed
-                    to provide value to our readers.
+                  <div className="flex items-center gap-3 mb-4">
+                    <Video className="w-10 h-10 text-black dark:text-white" />
+                    <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white">
+                      Latest Videos
+                    </h2>
+                  </div>
+                  <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-400">
+                    Comprehensive video tutorials and visual guides
                   </p>
                 </div>
+                <Link
+                  href="/videos"
+                  className="hidden md:flex items-center gap-2 text-black dark:text-white font-medium hover:opacity-70 transition-opacity text-lg"
+                >
+                  Explore More <ArrowRight className="w-5 h-5" />
+                </Link>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-black dark:bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Users className="w-6 h-6 text-white dark:text-black" />
-                </div>
-                <div>
-                  <h3 className="text-xl md:text-2xl font-semibold text-black dark:text-white mb-2">
-                    Community Driven
+              {videos.length > 0 ? (
+                <>
+                  {/* Featured Video */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                    className="mb-12"
+                  >
+                    <motion.div
+                      whileHover={{ scale: 1.01 }}
+                      transition={{ duration: 0.3 }}
+                      className="relative overflow-hidden rounded-2xl cursor-pointer group"
+                      onClick={() => window.location.href = `/videos/${videos[0].id}`}
+                    >
+                      {/* Background Image */}
+                      <div className="relative aspect-[21/9] md:aspect-[21/8] lg:aspect-[21/7]">
+                        <img
+                          src={videos[0].thumbnailUrl}
+                          alt={videos[0].title}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/40 dark:from-black/95 dark:via-black/80 dark:to-black/50" />
+                        
+                        {/* Play Button Overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="w-20 h-20 md:w-24 md:h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-4 border-white/50 group-hover:scale-110 transition-transform duration-300">
+                            <Play className="w-10 h-10 md:w-12 md:h-12 text-white fill-white ml-1" />
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
+                          <div className="flex items-center gap-3 mb-4">
+                            <Video className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                            <span className="px-3 py-1 bg-white/90 dark:bg-white text-black text-xs md:text-sm font-bold uppercase tracking-wider rounded-full">
+                              Featured
+                            </span>
+                            {videos[0].category && (
+                              <span className="px-3 py-1 bg-black/50 backdrop-blur-sm text-white text-xs md:text-sm font-semibold uppercase tracking-wider rounded-full border border-white/30">
+                                {videos[0].category.name}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4 max-w-4xl group-hover:text-gray-100 transition-colors">
+                            {videos[0].title}
+                          </h3>
+                          
+                          <p className="text-base md:text-lg text-gray-200 dark:text-gray-300 mb-6 max-w-3xl line-clamp-2">
+                            {videos[0].description}
+                          </p>
+                          
+                          <div className="flex flex-wrap items-center gap-4 md:gap-6">
+                            <div className="flex items-center gap-2 text-white">
+                              <Play className="w-4 h-4 md:w-5 md:h-5" />
+                              <span className="text-sm md:text-base font-medium">{videos[0].duration}</span>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-white text-sm md:text-base font-medium group-hover:bg-white/20 transition-colors">
+                              <Eye className="w-4 h-4 md:w-5 md:h-5" />
+                              <span>Watch Now</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                    {videos.slice(1, 4).map((video, index) => (
+                      <motion.div
+                        key={video.id}
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: '-50px' }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                      >
+                        <VideoCard
+                          id={video.id}
+                          title={video.title}
+                          description={video.description}
+                          thumbnailUrl={video.thumbnailUrl}
+                          videoUrl={video.videoUrl}
+                          publishedAt={video.publishedAt}
+                          category={video.category?.name}
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Mobile Explore More Link */}
+                  <div className="md:hidden text-center mt-8">
+                    <Link
+                      href="/videos"
+                      className="inline-flex items-center gap-2 text-black dark:text-white font-medium hover:opacity-70 transition-opacity text-lg"
+                    >
+                      Explore More Videos <ArrowRight className="w-5 h-5" />
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-16">
+                  <Video className="w-24 h-24 text-gray-300 dark:text-gray-700 mx-auto mb-6" />
+                  <h3 className="text-2xl font-bold text-black dark:text-white mb-4">
+                    No Videos Yet
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Our readers come first. We write with clarity, respect their time,
-                    and deliver value in every piece.
+                  <p className="text-gray-600 dark:text-gray-400 mb-8">
+                    Check back soon for our latest video content!
                   </p>
+                  <Button href="/videos" size="lg">
+                    View All Videos
+                  </Button>
                 </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-black dark:bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="w-6 h-6 text-white dark:text-black" />
-                </div>
-                <div>
-                  <h3 className="text-xl md:text-2xl font-semibold text-black dark:text-white mb-2">
-                    Always Improving
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    We are committed to growth, constantly improving our craft and
-                    staying curious about the world.
-                  </p>
-                </div>
-              </div>
-
-              <Button href="/about" variant="secondary" size="lg">
-                Learn More About Us
-              </Button>
+              )}
             </motion.div>
-
-            {/* Image Placeholder */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
-              className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-2xl overflow-hidden shadow-xl"
-            >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center p-8">
-                  <BookOpen className="w-24 h-24 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                    Feature Image Placeholder
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </Container>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-black dark:bg-gray-950">
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl mx-auto text-center"
-          >
-            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-              Start Your Journey
-            </h2>
-            <p className="text-base md:text-lg lg:text-xl text-gray-300 dark:text-gray-400 mb-8 leading-relaxed">
-              Join thousands of readers who trust LittleText for quality content.
-              Subscribe to never miss a story.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button href="/contact" variant="secondary" size="lg">
-                Subscribe Now
-              </Button>
-              <Button href="/posts" size="lg">
-                Explore Articles
-              </Button>
-            </div>
-          </motion.div>
-        </Container>
-      </section>
+          </Container>
+        </section>
+      )}
     </div>
   );
 }

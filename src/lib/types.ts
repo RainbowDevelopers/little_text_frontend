@@ -65,3 +65,31 @@ export interface PaginatedResponse<T> {
     totalPages: number;
   };
 }
+
+export interface Podcast {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  audioUrl: string;
+  bannerImage?: string;
+  author: Author;
+  category?: Category;
+  duration?: number; // in seconds
+  publishedAt: string;
+  updatedAt: string;
+}
+
+export interface Video {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+  author: Author;
+  category?: Category;
+  duration?: number; // in seconds
+  publishedAt: string;
+  updatedAt: string;
+}

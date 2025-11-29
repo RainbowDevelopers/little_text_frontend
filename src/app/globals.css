@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* LittleText Design System - Apple-inspired minimalist palette */
+/* Modcrew Design System - Apple-inspired minimalist palette */
 @layer base {
   :root {
     /* Colors - Grayscale only */
@@ -121,9 +121,39 @@ h3 {
   }
 }
 
+@keyframes sparkle-fade {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg) translate(-50%, -50%);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.2) rotate(90deg) translate(-50%, -50%);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) rotate(180deg) translate(-50%, -50%) translateY(-20px);
+  }
+}
+
 .animate-sparkle {
   animation: sparkle forwards;
   transform-origin: center;
+}
+
+@keyframes sparkle-float {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.2);
+  }
+}
+
+.animate-sparkle-float {
+  animation: sparkle-float 3s ease-in-out infinite;
 }
 
 /* Shimmer Animation for Footer Pattern */
@@ -133,6 +163,16 @@ h3 {
   }
   100% {
     background-position: 200% 0;
+  }
+}
+
+/* Highway Road Strip Animation */
+@keyframes highway-strip {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-120px);
   }
 }
 
@@ -148,4 +188,14 @@ h3 {
 
 .logo-spotlight-text {
   display: inline-block;
+}
+
+/* Hide scrollbar for carousel */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

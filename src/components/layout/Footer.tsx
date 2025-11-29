@@ -11,9 +11,9 @@ const footerLinks = {
     { href: '/contact', label: 'Contact' },
   ],
   social: [
-    { href: '#', label: 'Twitter' },
-    { href: '#', label: 'LinkedIn' },
-    { href: '#', label: 'GitHub' },
+    { href: 'https://twitter.com', label: 'Twitter' },
+    { href: 'https://linkedin.com', label: 'LinkedIn' },
+    { href: 'https://github.com', label: 'GitHub' },
   ],
 };
 
@@ -21,7 +21,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-black border-t border-gray-900">
+    <footer className="bg-black">
       {/* Animated Pattern Section - Theme Aware */}
       <FooterPattern />
 
@@ -87,7 +87,7 @@ export default function Footer() {
           <div className="mt-12 pt-8 border-t border-gray-800">
             <div className="flex flex-col items-center gap-3">
               <p className="text-base text-gray-400 text-center">
-                &copy; {currentYear} LittleText. All rights reserved.
+                &copy; {currentYear} Modcrew. All rights reserved.
               </p>
               <p className="text-base text-gray-400 text-center">
                 Designed and developed by{' '}

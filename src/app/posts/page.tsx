@@ -8,14 +8,7 @@ import PostGrid from '@/components/blog/PostGrid';
 import Button from '@/components/ui/Button';
 import { Post, Category } from '@/lib/types';
 import { postsAPI, categoriesAPI } from '@/lib/api';
-import { ChevronLeft, ChevronRight, BookOpen, Eye, Users, TrendingUp, FileText } from 'lucide-react';
-
-const stats = [
-  { icon: FileText, label: 'Total Articles', value: '250+' },
-  { icon: Eye, label: 'Total Reads', value: '100K+' },
-  { icon: Users, label: 'Active Readers', value: '15K+' },
-  { icon: TrendingUp, label: 'Growing', value: '220%' },
-];
+import { ChevronLeft, ChevronRight, BookOpen, FileText } from 'lucide-react';
 
 function PostsContent() {
   const searchParams = useSearchParams();
@@ -74,14 +67,14 @@ function PostsContent() {
   const handlePrevPage = () => {
     if (page > 1) {
       setPage(page - 1);
-      window.scrollTo({ top: 400, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handleNextPage = () => {
     if (page < totalPages) {
       setPage(page + 1);
-      window.scrollTo({ top: 400, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -116,7 +109,7 @@ function PostsContent() {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="text-3xl md:text-5xl lg:text-6xl font-bold text-black dark:text-white mb-6 leading-tight"
             >
-              All Articles
+              All Stories
             </motion.h1>
 
             <motion.p
@@ -138,41 +131,6 @@ function PostsContent() {
               Dive into articles covering technology, design, culture, and more.
               Each piece is crafted with care and attention to detail.
             </motion.p>
-          </motion.div>
-        </Container>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 md:py-24 bg-black dark:bg-gray-950">
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12"
-          >
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="text-center"
-                >
-                  <Icon className="w-10 h-10 md:w-12 md:h-12 text-white mx-auto mb-4" />
-                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm md:text-base text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                    {stat.label}
-                  </div>
-                </motion.div>
-              );
-            })}
           </motion.div>
         </Container>
       </section>
@@ -218,7 +176,7 @@ function PostsContent() {
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                   }`}
                 >
-                  All Articles
+                  All Stories
                 </button>
                 {categories.map((category) => (
                   <button
@@ -271,7 +229,7 @@ function PostsContent() {
           {/* Posts Grid */}
           {!loading && !error && posts.length > 0 && (
             <>
-              <PostGrid posts={posts} columns={3} />
+              <PostGrid posts={posts} columns={3} categorySlug={selectedCategory || undefined} />
 
               {/* Pagination */}
               {totalPages > 1 && (
@@ -279,34 +237,87 @@ function PostsContent() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.3 }}
-                  className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-4"
+                  className="mt-16"
                 >
-                  <Button
-                    onClick={handlePrevPage}
-                    disabled={page === 1}
-                    variant="secondary"
-                    size="lg"
-                    icon={<ChevronLeft className="w-5 h-5" />}
-                  >
-                    Previous
-                  </Button>
+                  <div className="flex flex-col items-center gap-6">
+                    {/* Page Info */}
+                    <div className="text-center">
+                      <p className="text-gray-600 dark:text-gray-400 text-base mb-2">
+                        Showing page {page} of {totalPages}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-500">
+                        {posts.length} {posts.length === 1 ? 'story' : 'stories'} on this page
+                      </p>
+                    </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-600 dark:text-gray-400 font-medium text-lg">
-                      Page <span className="text-black dark:text-white font-bold">{page}</span> of{' '}
-                      <span className="text-black dark:text-white font-bold">{totalPages}</span>
-                    </span>
+                    {/* Navigation Buttons */}
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={handlePrevPage}
+                        disabled={page === 1}
+                        className={`
+                          flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all
+                          ${page === 1 
+                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed' 
+                            : 'bg-white dark:bg-gray-800 text-black dark:text-white border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black hover:scale-105'
+                          }
+                        `}
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                        <span>Previous</span>
+                      </button>
+
+                      {/* Page Numbers */}
+                      <div className="hidden sm:flex items-center gap-2">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (page <= 3) {
+                            pageNum = i + 1;
+                          } else if (page >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = page - 2 + i;
+                          }
+
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => {
+                                setPage(pageNum);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                              className={`
+                                w-12 h-12 rounded-lg font-semibold transition-all
+                                ${page === pageNum
+                                  ? 'bg-black dark:bg-white text-white dark:text-black scale-110 shadow-lg'
+                                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:scale-105'
+                                }
+                              `}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <button
+                        onClick={handleNextPage}
+                        disabled={page === totalPages}
+                        className={`
+                          flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all
+                          ${page === totalPages 
+                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed' 
+                            : 'bg-white dark:bg-gray-800 text-black dark:text-white border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black hover:scale-105'
+                          }
+                        `}
+                      >
+                        <span>Next</span>
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
-
-                  <Button
-                    onClick={handleNextPage}
-                    disabled={page === totalPages}
-                    variant="secondary"
-                    size="lg"
-                    icon={<ChevronRight className="w-5 h-5" />}
-                  >
-                    Next
-                  </Button>
                 </motion.div>
               )}
             </>
@@ -335,36 +346,6 @@ function PostsContent() {
               </div>
             </motion.div>
           )}
-        </Container>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-black dark:bg-gray-950">
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl mx-auto text-center"
-          >
-            <BookOpen className="w-16 h-16 text-white mx-auto mb-6" />
-            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-              Stay Informed
-            </h2>
-            <p className="text-base md:text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed">
-              Subscribe to our newsletter and never miss a story. Get the latest
-              articles delivered to your inbox.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button href="/contact" variant="secondary" size="lg">
-                Subscribe Now
-              </Button>
-              <Button href="/about" size="lg">
-                Learn More
-              </Button>
-            </div>
-          </motion.div>
         </Container>
       </section>
     </div>

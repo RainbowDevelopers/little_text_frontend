@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 
 interface LogoProps {
@@ -9,13 +9,19 @@ interface LogoProps {
 }
 
 /**
- * LittleText Logo Component
+ * Modcrew Logo Component
  * Simple, elegant text-based logo with optional spotlight effect
  * Automatically adapts to light/dark mode
  */
 export default function Logo({ className = '', withSpotlight = false }: LogoProps) {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted ? resolvedTheme === 'dark' : false;
 
   return (
     <div className={`relative inline-block ${className}`}>
@@ -36,7 +42,7 @@ export default function Logo({ className = '', withSpotlight = false }: LogoProp
               animation: 'spotlight-slide 3s linear infinite'
             }}
           >
-            LittleText
+            Modcrew
           </div>
         </div>
       ) : (
@@ -70,7 +76,7 @@ export default function Logo({ className = '', withSpotlight = false }: LogoProp
               fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif'
             }}
           >
-            LittleText
+            Modcrew
           </text>
         </svg>
       )}

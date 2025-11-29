@@ -5,14 +5,7 @@ import { motion } from 'framer-motion';
 import Container from '@/components/layout/Container';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { BookOpen, Users, Award, TrendingUp, Target, Heart, Zap, Shield } from 'lucide-react';
-
-const stats = [
-  { label: 'Articles Published', value: '500+', icon: BookOpen },
-  { label: 'Active Readers', value: '50K+', icon: Users },
-  { label: 'Industry Awards', value: '12', icon: Award },
-  { label: 'Growth Rate', value: '200%', icon: TrendingUp },
-];
+import { BookOpen, Users, Target, Heart, Zap, Shield } from 'lucide-react';
 
 const values = [
   {
@@ -120,50 +113,14 @@ export default function AboutPage() {
         </Container>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 md:py-24 bg-black dark:bg-gray-950">
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12"
-          >
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className="text-center"
-                >
-                  <Icon className="w-10 h-10 md:w-12 md:h-12 text-white mx-auto mb-4" />
-                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm md:text-base text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                    {stat.label}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </Container>
-      </section>
-
       {/* Mission Section */}
       <section className="py-16 md:py-24 bg-white dark:bg-black">
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
             >
               <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-6">
                 Our Mission
@@ -188,10 +145,9 @@ export default function AboutPage() {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
               className="relative"
             >
               <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-2xl overflow-hidden shadow-2xl">
@@ -213,10 +169,9 @@ export default function AboutPage() {
       <section className="py-16 md:py-24 bg-gray-50 dark:bg-gray-900">
         <Container>
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
             className="text-center mb-12 md:mb-16"
           >
             <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-4">
@@ -234,10 +189,9 @@ export default function AboutPage() {
               return (
                 <motion.div
                   key={value.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
                 >
                   <Card padding="lg" className="h-full hover:shadow-xl transition-shadow">
                     <div className="flex items-start gap-4">
@@ -267,10 +221,9 @@ export default function AboutPage() {
       <section className="py-16 md:py-24 bg-white dark:bg-black">
         <Container>
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
             className="text-center mb-12 md:mb-16"
           >
             <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-4">
@@ -286,10 +239,9 @@ export default function AboutPage() {
             {team.map((member, index) => (
               <motion.div
                 key={member.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
               >
                 <Card padding="lg" className="text-center h-full">
                   <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-full mx-auto mb-4 flex items-center justify-center">
@@ -310,78 +262,7 @@ export default function AboutPage() {
           </div>
         </Container>
       </section>
-
-      {/* Story Section */}
-      <section className="py-16 md:py-24 bg-gray-50 dark:bg-gray-900">
-        <Container>
-          <div className="max-w-4xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-8">
-                Our Story
-              </h2>
-              <div className="space-y-6 text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-                <p>
-                  LittleText was born from a simple observation: in an age of
-                  endless content, truly thoughtful writing has become rare. We
-                  wanted to create a space where quality matters more than
-                  quantity, where every word serves a purpose.
-                </p>
-                <p>
-                  What started as a small collection of essays has grown into a
-                  platform for diverse voices and perspectives. Our contributors
-                  include writers, thinkers, and creators from around the world,
-                  each bringing their unique insights and experiences.
-                </p>
-                <p>
-                  We have learned that great content is not about following trends
-                  or chasing algorithms. It is about understanding what truly
-                  resonates with people, what challenges them to think
-                  differently, and what enriches their lives.
-                </p>
-                <p>
-                  Today, we are proud to serve a community of readers who value
-                  depth, clarity, and authenticity. Thank you for being part of
-                  our journey.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </Container>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-black dark:bg-gray-950">
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl mx-auto text-center"
-          >
-            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-              Join Our Community
-            </h2>
-            <p className="text-base md:text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed">
-              Subscribe to receive our latest articles and insights directly in
-              your inbox. No spam, just quality content.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button href="/posts" variant="secondary" size="lg">
-                Explore Articles
-              </Button>
-              <Button href="/contact" size="lg">
-                Get In Touch
-              </Button>
-            </div>
-          </motion.div>
-        </Container>
-      </section>
     </div>
   );
 }
+

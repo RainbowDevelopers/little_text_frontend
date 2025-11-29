@@ -6,7 +6,7 @@ import MouseSparkles from "@/components/ui/MouseSparkles";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LittleText - Stories Worth Reading",
+  title: "Modcrew - Stories Worth Reading",
   description: "Thoughtful content delivered with clarity and purpose. A minimalist blogging platform for stories that matter.",
   keywords: ["blog", "writing", "stories", "articles", "content"],
 };

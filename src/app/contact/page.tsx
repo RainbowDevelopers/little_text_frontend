@@ -329,35 +329,6 @@ export default function ContactPage() {
           </div>
         </Container>
       </section>
-
-      {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-black dark:bg-gray-950">
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl mx-auto text-center"
-          >
-            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-              Prefer Email?
-            </h2>
-            <p className="text-base md:text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed">
-              You can reach us directly at{' '}
-              <a
-                href="mailto:hello@littletext.com"
-                className="text-white font-semibold hover:underline"
-              >
-                hello@littletext.com
-              </a>
-            </p>
-            <Button href="mailto:hello@littletext.com" variant="secondary" size="lg">
-              Send Email
-            </Button>
-          </motion.div>
-        </Container>
-      </section>
     </div>
   );
 }
