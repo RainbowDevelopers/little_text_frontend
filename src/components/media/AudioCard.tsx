@@ -42,7 +42,7 @@ export default function AudioCard({
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // Convert relative audio URL to streaming URL
-  // Convert /uploads/podcasts/file.mp3 to http://localhost:8000/api/v1/restapi/stream/podcasts/file.mp3
+  // Convert /uploads/podcasts/file.mp3 to the same-origin streaming endpoint.
   const getAudioUrl = () => {
     if (!audioUrl) return '';
     
@@ -52,7 +52,7 @@ export default function AudioCard({
     }
     
     // Extract type and filename from /uploads/podcasts/file.mp3
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1/restapi';
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1/restapi';
     const urlWithoutUploads = audioUrl.replace(/^\/uploads\//, '');
     const parts = urlWithoutUploads.split('/');
     

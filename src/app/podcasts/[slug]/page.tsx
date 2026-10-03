@@ -142,11 +142,11 @@ export default function PodcastDetailPage() {
     );
   }
 
-  // Convert /uploads/podcasts/file.mp3 to /api/v1/restapi/stream/podcasts/file.mp3
+  // Convert /uploads/podcasts/file.mp3 to the same-origin streaming endpoint.
   let fullAudioUrl = podcast.audioUrl;
   if (!podcast.audioUrl.startsWith('http')) {
     const parts = podcast.audioUrl.replace('/uploads/', '').split('/');
-    fullAudioUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/v1/restapi/stream/${parts[0]}/${parts[1]}`;
+    fullAudioUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1/restapi'}/stream/${parts[0]}/${parts.slice(1).join('/')}`;
   }
 
   return (
